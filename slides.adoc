@@ -1,0 +1,112 @@
+
+Probar cosas con 
+
+
+# Heap vs Stack
+
+# Structs are smaller that you usially think
+slices, maps, ... is just copying few pointers (is like passing by reference by default)
+
+# 
+
+
+for i in "Value" "Pointers"; do go test -trace=traces/$i github.com/mariomac/gomem/donut -bench=Benchmark$i ; done
+
+-gcflags="-m"
+-trace=traces/$i
+-memprofile pprof/$i
+
+go test -trace=benchmarks.out  github.com/mariomac/gomem/donut -bench=.
+
+gomem$ for i in "Value" "Pointers"; do go test -benchmem -trace=traces/$i github.com/mariomac/gomem/donut -bench=Benchmark$i ; done
+BenchmarkValue-4   	 5000000	       248 ns/op	      15 B/op	       0 allocs/op
+Heap: 11873 -> 7910/s
+Gc: 24 -> 16/s
+Time: 1501ms
+BenchmarkPointers-4   	 5000000	       292 ns/op	      80 B/op	       1 allocs/op
+Heap: 59264 --> 33294/s
+Gc: 123 --> 69/s
+Time: 1780ms
+
+gomem$ go test -benchmem -memprofile pprof=all.pprof github.com/mariomac/gomem/donut -bench=.
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkValue-4      	 5000000	       241 ns/op	      15 B/op	       0 allocs/op
+BenchmarkPointers-4   	 5000000	       290 ns/op	      79 B/op	       1 allocs/op
+
+gomem$ go tool pprof pprof/all.pprof
+Type: alloc_space
+Time: Dec 1, 2018 at 7:22pm (CET)
+Entering interactive mode (type "help" for commands, "o" for options)
+(pprof) top
+Showing nodes accounting for 535.53MB, 100% of 535.53MB total
+      flat  flat%   sum%        cum   cum%
+  444.02MB 82.91% 82.91%   444.02MB 82.91%  github.com/mariomac/gomem/donut.RndPtr
+   91.50MB 17.09%   100%    91.50MB 17.09%  github.com/mariomac/gomem/donut.RndVal
+         0     0%   100%   444.02MB 82.91%  github.com/mariomac/gomem/donut.BenchmarkPointers
+         0     0%   100%    91.50MB 17.09%  github.com/mariomac/gomem/donut.BenchmarkValue
+         0     0%   100%   535.53MB   100%  testing.(*B).launch
+         0     0%   100%   535.53MB   100%  testing.(*B).runN
+
+Cuando desde go tool pprof hacems el top RndPtr y el Top RndVal, vemos que los megas generados por
+rndVal vienen de crear el array de toppings, y en rndPtr vienen de ese mismo array + el Donut en el
+heap.
+
+* usar arrays en vez de slices minimiza creación de heap, pero es muy poco para tan pocas ventajas que puede tener
+
+gomem$ go test -benchmem -trace=traces/Valtoptr github.com/mariomac/gomem/donut -bench=BenchmarkValToPointer
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkValToPointer-4   	 5000000	       237 ns/op	      16 B/op	       0 allocs/op
+
+It seems pointers as arguments do not have influence in escape analysis, es hasta más rápido.
+gomem$ go test -gcflags="-m" -benchmem -trace=traces/Valtoptr github.com/mariomac/gomem/donut -bench=BenchmarkValToPointer
+...
+donut/donut_test.go:24:16: BenchmarkValToPointer &val does not escape
+donut/donut_test.go:24:22: BenchmarkValToPointer &preferences does not escape
+...
+
+Esto es a que :
+
+donut/donut.go:103:15: ScorePtr d does not escape
+donut/donut.go:103:25: ScorePtr p does not escape
+
+Si no escapa al heap, es más rápido pasar punteros. Pero cualquier cambio puede jodernos, por ejemplo con un logger simple:
+
+gomem$ for i in "Value" "Pointers" "ValToPointer"; do go test -benchmem -trace=traces/$i github.com/mariomac/gomem/donut -bench=Benchmark$i ; done
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkValue-4   	 1000000	      1793 ns/op	     200 B/op	       3 allocs/op
+PASS
+ok  	github.com/mariomac/gomem/donut	1.836s
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkPointers-4   	  500000	      2158 ns/op	     324 B/op	      10 allocs/op
+PASS
+ok  	github.com/mariomac/gomem/donut	1.122s
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkValToPointer-4   	  500000	      2112 ns/op	     324 B/op	      10 allocs/op
+PASS
+ok  	github.com/mariomac/gomem/donut	1.099s
+
+Conclusiones:
+- No podemos estar traceando el escape analysis en cada cambio, hay que ser productivo, así que:
+- Retorna Valores
+- Pasa valores, si no tienes que modificarlos
+- Cualquier optimización mínima puede joderse con una pequeña refactorización
+
+
+
+Nueva versión de intellij/goland que muestra los inlines
+
+
+Future work:
+
+* Stack growt: https://play.golang.org/p/pxn5u4EBSI
+

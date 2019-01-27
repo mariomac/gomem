@@ -16,11 +16,11 @@ func BenchmarkPointers(b *testing.B) {
 	}
 }
 
-func BenchmarkValToPointer(b *testing.B) {
-	preferences := RndPreferences()
-	for i := 0; i < b.N; i++ {
-		val := RndVal()
-		_ = ScorePtr(&val, &preferences)
-	}
-}
+//func BenchmarkValToPointer(b *testing.B) {
+//	preferences := RndPreferences()
+//	for i := 0; i < b.N; i++ {
+//		val := RndVal()
+//		_ = ScorePtr(&val, &preferences)
+//	}
+//}
 

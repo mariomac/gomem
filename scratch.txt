@@ -110,3 +110,26 @@ Future work:
 
 * Stack growt: https://play.golang.org/p/pxn5u4EBSI
 
+
+Cambiando logger por un printer guarruzo:
+
+type Printer interface {
+	Print(v interface{})
+}
+type p struct{}
+
+func (*p) Print(v interface{}) {
+}
+
+var logger Printer = &p{}
+
+
+gomem$ go test ./donut/. -bench=Benchmark
+goos: darwin
+goarch: amd64
+pkg: github.com/mariomac/gomem/donut
+BenchmarkValue-4                 5000000               354 ns/op
+BenchmarkPointers-4              5000000               336 ns/op
+BenchmarkValToPointer-4          5000000               351 ns/op
+PASS
+ok      github.com/mariomac/gomem/donut 6.253s

@@ -6,15 +6,15 @@ import (
 )
 
 type Donut struct {
-	Radius     float32 //4
-	Thick      float32 //4
+	Radius     float32  //4
+	Thick      float32  //4
 	Toppings   []string //24
-	GlutenFree bool // 4
-	Hole       bool // 4
-	Filling    string // 16
+	GlutenFree bool     // 4
+	Hole       bool     // 4
+	Filling    string   // 16
 }
 
-type DonutPreferences struct {
+type Preferences struct {
 	Radius     float32
 	Thick      float32
 	Toppings   map[string]float32
@@ -82,8 +82,8 @@ func RndVal() Donut {
 	return d
 }
 
-func RndPreferences() DonutPreferences {
-	dp := DonutPreferences{
+func RndPreferences() Preferences {
+	dp := Preferences{
 		Radius:     radiuses[rnd.Intn(len(radiuses))],
 		Thick:      thicks[rnd.Intn(len(radiuses))],
 		GlutenFree: float32(10 - rnd.Intn(20)),
@@ -103,7 +103,7 @@ func RndPreferences() DonutPreferences {
 //var out = bytes.NewBuffer(make([]byte, 0, 1000))
 //var logger = log.New(out, "", 0)
 
-func ScorePtr(d *Donut, p *DonutPreferences) float32 {
+func ScorePtr(d *Donut, p *Preferences) float32 {
 	//logger.Print(d)    //f***ng escape analysis
 	score := p.Filling[d.Filling] + float32(math.Abs(float64(p.Radius-d.Radius))) +
 		float32(math.Abs(float64(p.Thick-d.Thick)))
@@ -119,7 +119,12 @@ func ScorePtr(d *Donut, p *DonutPreferences) float32 {
 	return score
 }
 
-func ScoreVal(d Donut, p DonutPreferences) float32 {
+func InitialScorePtr(d *Donut, p *Preferences) float32 {
+	return p.Filling[d.Filling] + float32(math.Abs(float64(p.Radius-d.Radius))) +
+		float32(math.Abs(float64(p.Thick-d.Thick)))
+}
+
+func ScoreVal(d Donut, p Preferences) float32 {
 	//logger.Print(d)    //f***ng escape analysis
 	score := p.Filling[d.Filling] + float32(math.Abs(float64(p.Radius-d.Radius))) +
 		float32(math.Abs(float64(p.Thick-d.Thick)))
@@ -133,4 +138,9 @@ func ScoreVal(d Donut, p DonutPreferences) float32 {
 		score += p.Toppings[topping]
 	}
 	return score
+}
+
+func InitialScoreVal(d Donut, p Preferences) float32 {
+	return p.Filling[d.Filling] + float32(math.Abs(float64(p.Radius-d.Radius))) +
+		float32(math.Abs(float64(p.Thick-d.Thick)))
 }

@@ -96,7 +96,7 @@ BenchmarkValue-4     5000000     262 ns/op    15 B/op   0 allocs/op
 BenchmarkPointers-4  5000000     332 ns/op    79 B/op   1 allocs/op
 ```
 
-Passing arguments by value is ~23% faster than using pointers!
+Our code (including random number generation and scoring operations) using values is ~23% faster than using pointers!
 
 # Digging into the results
 
@@ -115,7 +115,7 @@ Passing arguments by value is ~23% faster than using pointers!
 ![Trace with pointers](./figs/trace-vals.png)
 
 * Heap is filled every ~60ms
-* Garbage Collection is triggered every ~20 ms
+* Garbage Collection usually takes ~240 ns
 
 # Digging more into the results
 
@@ -285,22 +285,39 @@ func b() {
 15: }
 ```
 
-
 # <!--fit--> Conclusions
 
-# Conclusions
+# #1: putting some light on a common Go misconception
 
-## <!--fit--> Don't do premature optimizations.
+## _"Moving pointers is faster than moving structs"_
+
+# #1: putting some light on a common Go misconception
+
+## _"Moving pointers is faster than moving structs"_
+### Yes, but... `t(mem_alloc) >> t(cache_line_copy)`
+
+# #2: walktrhough by some nice Go performance tools 
+
+* `-benchmem` to also benchmark memory generation
+* `-cpuprofile` (and `-memprofile`) to trace garbage collection (amongst others)
+* `pprof` to see which parts of the code are the most time/memory consuming
+* `-gcflags="-m"` to get insights about compiler optimization decisions
+
+# #3: <!--fit--> Don't do premature optimizations
   - Readability first
-  - Compiler optimizations may disable your "optimizations"
-  - Internal implementation may disable other optimizations: `log.Debug(value)`
-
-# Conclusions
-
-
+  - Compiler optimizations may cancel your "optimizations"
+  - Internal implementation detaills may cancel other optimizations: `log.Debug(value)`
 
 # Future work
 
-- Multiple depth calls
-- Recursive functions
-- Stack growt
+- Values travelling depth in the call stack
+  - Recursive functions
+- Cost of Stack growth vs big heaps
+
+# <!-- fit --> Thank you for your attention!
+
+<!-- _class: lead -->
+
+## Mario Macías (@MaciasUPC)
+### Barcelona Golang Meetup. Jan 31st, 2019
+#### http://github.com/mariomac/gomem

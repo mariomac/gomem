@@ -12,9 +12,19 @@ style: |
 
 <!-- _class: lead -->
 
-## Mario Macías (@MaciasUPC)
+## Mario Macías, Ph.D. (@MaciasUPC)
 ### Barcelona Golang Meetup. Jan 31st, 2019
 #### http://github.com/mariomac/gomem
+
+# Who am I?
+
+## Senior Software Engineer at New Relic (2017-)
+
+* Before: Midokura _(2016-17)_, Barcelona Supercomputing Center _(2006-16)_,
+  Gameloft _(2005-06)_, iSOCO _(2003-04)
+
+## Part-time associate lecturer at Universitat Politècnica de Catalunya (2009-)
+
 
 # Donuts quality scoring
 
@@ -318,6 +328,6 @@ func b() {
 
 <!-- _class: lead -->
 
-## Mario Macías (@MaciasUPC)
+## Mario Macías, Ph.D. (@MaciasUPC)
 ### Barcelona Golang Meetup. Jan 31st, 2019
 #### http://github.com/mariomac/gomem

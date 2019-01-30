@@ -304,7 +304,7 @@ func b() {
 # #1: putting some light on a common Go misconception
 
 ## _"Moving pointers is faster than moving structs"_
-### Yes, but... `t(mem_alloc) >> t(cache_line_copy)`
+### Yes, but... `t(heap_alloc) >> t(cache_line_copy)`
 
 # #2: walktrhough by some nice Go performance tools 
 

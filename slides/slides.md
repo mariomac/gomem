@@ -12,21 +12,25 @@ style: |
 
 <!-- _class: lead -->
 
-## Mario Macías, Ph.D. (@MaciasUPC)
+## Mario Macías, Ph.D.
 ### Barcelona Golang Meetup. Jan 31st, 2019
-#### http://github.com/mariomac/gomem
+
+#### twitter.com/MaciasUPC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; github.com/mariomac
 
 # Who am I?
 
 ## Senior Software Engineer at New Relic (2017-)
-
-* Before: Midokura _(2016-17)_, Barcelona Supercomputing Center _(2006-16)_,
-  Gameloft _(2005-06)_, iSOCO _(2003-04)
-
 ## Part-time associate lecturer at Universitat Politècnica de Catalunya (2009-)
 
+### Before:
+```plain
+ |       |Game|                                        |Mido|  New 
+ | iSOCO |loft|    Barcelona Supercomputing Center     |kura| Relic 
+ |---+---+---+---+---+---+---|---+---+---+---+---+---+---+---+---*-
+2003    2005                2010                2015            2019
+```
 
-# Donuts quality scoring
+# Our scenario: Donuts quality scoring
 
 ```go
 package donut
@@ -41,7 +45,7 @@ type Donut struct {              type Preferences struct {
 }                                 }
 ```
 
-# Donuts quality scoring
+# Our scenario: Donuts quality scoring
 
 ```plain
 +-------------+         +-------------+
@@ -86,13 +90,13 @@ func Score(d Donut, p Preferences) float32 { }
 func BenchmarkValue(b *testing.B) {
 	preferences := RndPreferences()
 	for i := 0; i < b.N; i++ {
-		_ = ScoreVal(RndVal(), preferences)
+		_ = ScoreVal(GenerateRndVal(), preferences)
 	}
 }
 func BenchmarkPointers(b *testing.B) {
 	preferences := RndPreferences()
 	for i := 0; i < b.N; i++ {
-		_ = ScorePtr(RndPtr(), &preferences)
+		_ = ScorePtr(GenerateRndPtr(), &preferences)
 	}
 }
 ```
@@ -150,15 +154,15 @@ Our code (including random number generation and scoring operations) using value
 (pprof) top
 Showing nodes accounting for 568.03MB, 100% of 568.03MB total
       flat  flat%   sum%        cum   cum%
-  479.03MB 84.33% 84.33%   479.03MB 84.33%  github.com/mariomac/gomem/donut.RndPtr
-      89MB 15.67%   100%       89MB 15.67%  github.com/mariomac/gomem/donut.RndVal
+  479.03MB 84.33% 84.33%   479.03MB 84.33%  github.com/mariomac/gomem/donut.GenerateRndPtr
+      89MB 15.67%   100%       89MB 15.67%  github.com/mariomac/gomem/donut.GenerateRndVal
          0     0%   100%   479.03MB 84.33%  github.com/mariomac/gomem/donut.BenchmarkPointers
          0     0%   100%       89MB 15.67%  github.com/mariomac/gomem/donut.BenchmarkValue
          0     0%   100%   568.03MB   100%  testing.(*B).launch
          0     0%   100%   568.03MB   100%  testing.(*B).runN
 ```
 
-# Compile-time escape analysis
+# But `GenerateRndPtr` and `GenerateRndVal` generate the same amount of information!
 
 ![](./figs/go-song.png)
 
@@ -295,39 +299,47 @@ func b() {
 15: }
 ```
 
+# Compile-time escape analysis
+
+#### <!-- fit --> **Priority #1**: try to allocate new objects in the stack
+#### <!-- fit --> **#2**: allocate in the heap the values that "escape" the stack
+* Even if they don't actually escape, **they will be allocated in the heap if the compiler is not 100% sure**
+
 # <!--fit--> Conclusions
 
-# #1: putting some light on a common Go misconception
+# #1: putting some light on a common misconception for memory-managed languages
 
 ## _"Moving pointers is faster than moving structs"_
 
-# #1: putting some light on a common Go misconception
+# #1: putting some light on a common misconception for memory-managed languages
 
 ## _"Moving pointers is faster than moving structs"_
 ### Yes, but... `t(heap_alloc) >> t(cache_line_copy)`
 
-# #2: walktrhough by some nice Go performance tools 
+# #2: <!--fit--> Don't try premature optimizations
+  - Readability first
+  - Compiler optimizations may disable your "optimizations"
+  - Internal implementation details may disable compiler optimizations: `log.Debug(value)`
+
+# #3: walktrhough by some nice Go performance tools 
 
 * `-benchmem` to also benchmark memory generation
 * `-cpuprofile` (and `-memprofile`) to trace garbage collection (amongst others)
 * `pprof` to see which parts of the code are the most time/memory consuming
 * `-gcflags="-m"` to get insights about compiler optimization decisions
 
-# #3: <!--fit--> Don't do premature optimizations
-  - Readability first
-  - Compiler optimizations may cancel your "optimizations"
-  - Internal implementation detaills may cancel other optimizations: `log.Debug(value)`
-
 # Future work
 
 - Values travelling depth in the call stack
   - Recursive functions
 - Cost of Stack growth vs big heaps
+- Using values vs pointers as receivers
 
 # <!-- fit --> Thank you for your attention!
 
 <!-- _class: lead -->
 
-## Mario Macías, Ph.D. (@MaciasUPC)
+## Mario Macías, Ph.D.
 ### Barcelona Golang Meetup. Jan 31st, 2019
-#### http://github.com/mariomac/gomem
+
+#### twitter.com/MaciasUPC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; github.com/mariomac
